@@ -9,6 +9,7 @@ import lombok.ToString;
 import org.hibernate.Hibernate;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @ToString
@@ -17,15 +18,11 @@ import java.util.Objects;
 public class Customer {
     @Id
     @GeneratedValue(generator = "uuid")
-    private String customerId;
+    private UUID customerId;
 
     // add more customer related info here
 
     public Customer() {
-    }
-
-    public Customer(String customerId) {
-        this.customerId = customerId;
     }
 
     @Override

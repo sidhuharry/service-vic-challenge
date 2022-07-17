@@ -1,4 +1,4 @@
-package gov.service.vic.demo.db.service;
+package gov.service.vic.demo.service;
 
 
 import gov.service.vic.demo.db.entity.MenuItem;

@@ -8,6 +8,7 @@ import org.hibernate.Hibernate;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 @ToString
 @Entity
@@ -22,7 +23,7 @@ public class Order {
 
     @Id
     @GeneratedValue(generator = "uuid")
-    private String orderId;
+    private UUID orderId;
 
     @OneToMany(mappedBy = "orderItemId")
     private Set<OrderItem> orderItems;

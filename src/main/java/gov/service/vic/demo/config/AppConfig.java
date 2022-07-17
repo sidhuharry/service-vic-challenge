@@ -1,7 +1,7 @@
 package gov.service.vic.demo.config;
 
 import gov.service.vic.demo.db.entity.MenuItem;
-import gov.service.vic.demo.db.service.IMenuService;
+import gov.service.vic.demo.service.IMenuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;

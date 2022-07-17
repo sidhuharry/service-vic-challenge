@@ -5,6 +5,7 @@ import gov.service.vic.demo.db.entity.OrderItem;
 import gov.service.vic.demo.rest.model.*;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service public class ObjectMapper {
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
     public Order toOrder(OrderRequest orderRequest, String customerId, String orderId) {
         Order order = toOrder(orderRequest, customerId);
-        order.setOrderId(orderId);
+        order.setOrderId(UUID.fromString(orderId));
         return order;
     }
 

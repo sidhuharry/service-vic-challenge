@@ -10,4 +10,6 @@ import java.util.List;
 @Service
 public interface IMenuService {
     List<MenuItem> saveAll(List<MenuItem> menuItemList);
+
+    List<MenuItem> getAll();
 }

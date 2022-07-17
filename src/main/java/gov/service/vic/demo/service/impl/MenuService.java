@@ -15,8 +15,13 @@ public class MenuService implements IMenuService {
     public MenuService(MenuItemRepo menuItemRepo) {
         this.menuItemRepo = menuItemRepo;
     }
+
     @Override
     public List<MenuItem> saveAll(List<MenuItem> menuItemList) {
         return (List<MenuItem>) menuItemRepo.saveAll(menuItemList);
+    }
+
+    @Override public List<MenuItem> getAll() {
+        return (List<MenuItem>) menuItemRepo.findAll();
     }
 }

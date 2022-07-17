@@ -1,8 +1,7 @@
-package gov.service.vic.demo.service;
+package gov.service.vic.demo.db.service;
 
 
-import gov.service.vic.demo.model.MenuItem;
-import gov.service.vic.demo.repo.MenuItemRepo;
+import gov.service.vic.demo.db.entity.MenuItem;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

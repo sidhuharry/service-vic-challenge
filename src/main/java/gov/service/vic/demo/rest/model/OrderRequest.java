@@ -1,8 +1,7 @@
-package gov.service.vic.demo.model.rest;
+package gov.service.vic.demo.rest.model;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 

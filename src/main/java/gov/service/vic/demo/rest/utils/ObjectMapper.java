@@ -1,14 +1,13 @@
 package gov.service.vic.demo.rest.utils;
 
-import gov.service.vic.demo.model.Order;
-import gov.service.vic.demo.model.OrderItem;
-import gov.service.vic.demo.model.rest.*;
-import org.aspectj.weaver.ast.Or;
+import gov.service.vic.demo.db.entity.Order;
+import gov.service.vic.demo.db.entity.OrderItem;
+import gov.service.vic.demo.rest.model.*;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
 
-@Service public class Mapper {
+@Service public class ObjectMapper {
 
     public Order toOrder(OrderRequest orderRequest, String customerId) {
         Order order = new Order();
@@ -45,8 +44,8 @@ import java.util.stream.Collectors;
         return orderItem;
     }
 
-    private gov.service.vic.demo.model.Discount toDiscountItem(Discount requestDiscount) {
-        gov.service.vic.demo.model.Discount discount = new gov.service.vic.demo.model.Discount();
+    private gov.service.vic.demo.db.entity.Discount toDiscountItem(Discount requestDiscount) {
+        gov.service.vic.demo.db.entity.Discount discount = new gov.service.vic.demo.db.entity.Discount();
         discount.setDiscountCode(requestDiscount.getDiscountCode());
         discount.setQuantity(requestDiscount.getQuantity());
         discount.setDesc(requestDiscount.getDesc());

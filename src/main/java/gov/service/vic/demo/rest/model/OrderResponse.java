@@ -1,4 +1,4 @@
-package gov.service.vic.demo.model.rest;
+package gov.service.vic.demo.rest.model;
 
 import lombok.Builder;
 

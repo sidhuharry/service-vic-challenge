@@ -1,8 +1,8 @@
-package gov.service.vic.demo.service.impl;
+package gov.service.vic.demo.db.service.impl;
 
-import gov.service.vic.demo.model.Customer;
-import gov.service.vic.demo.repo.CustomerRepo;
-import gov.service.vic.demo.service.ICustomerService;
+import gov.service.vic.demo.db.entity.Customer;
+import gov.service.vic.demo.db.repo.CustomerRepo;
+import gov.service.vic.demo.db.service.ICustomerService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

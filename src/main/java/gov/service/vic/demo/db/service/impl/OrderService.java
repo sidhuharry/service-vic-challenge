@@ -1,8 +1,8 @@
-package gov.service.vic.demo.service.impl;
+package gov.service.vic.demo.db.service.impl;
 
-import gov.service.vic.demo.model.Order;
-import gov.service.vic.demo.repo.OrderRepo;
-import gov.service.vic.demo.service.IOrderService;
+import gov.service.vic.demo.db.entity.Order;
+import gov.service.vic.demo.db.repo.OrderRepo;
+import gov.service.vic.demo.db.service.IOrderService;
 import org.springframework.stereotype.Service;
 
 @Service

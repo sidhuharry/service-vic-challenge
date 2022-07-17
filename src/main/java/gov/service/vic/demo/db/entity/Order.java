@@ -1,4 +1,4 @@
-package gov.service.vic.demo.model;
+package gov.service.vic.demo.db.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

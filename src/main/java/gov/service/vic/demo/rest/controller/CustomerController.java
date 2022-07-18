@@ -3,7 +3,7 @@ package gov.service.vic.demo.rest.controller;
 import gov.service.vic.demo.db.entity.Customer;
 import gov.service.vic.demo.db.entity.Order;
 import gov.service.vic.demo.rest.exception.InternalErrorException;
-import gov.service.vic.demo.service.RequestValidator;
+import gov.service.vic.demo.rest.utils.RequestValidator;
 import gov.service.vic.demo.service.impl.CustomerService;
 import gov.service.vic.demo.rest.exception.ResourceNotFoundException;
 import gov.service.vic.demo.rest.model.OrderRequest;
@@ -53,17 +53,18 @@ public class CustomerController {
         // 1. Check if customer exists
         customerService.customerExists(UUID.fromString(customerId))
                 .orElseThrow(() -> new ResourceNotFoundException(customerId));
-        // 2. Check payload
-        requestValidator.validateNewOrderRequest(orderRequest);
+        orderRequest.setCustomer(new gov.service.vic.demo.rest.model.Customer(customerId));
+        // 2. Check payload for discrepancy and sanitize if found any
+        OrderRequest sanitizedRequest = requestValidator.validateNewOrderRequest(orderRequest);
         // [END] Validate the request
 
         // Save order
         Order order = null;
-        try {
-            order = orderService.save(objectMapper.toOrder(orderRequest, customerId));
-        } catch (Exception exception) {
-            throw new InternalErrorException(exception.getMessage());
-        }
+        //try {
+            order = orderService.save(objectMapper.toOrder(sanitizedRequest, customerId));
+        //} catch (Exception exception) {
+          //  throw new InternalErrorException(exception.getMessage());
+        //}
 
         return order == null ? objectMapper.toResponse(order, OrderStatus.FAILURE,
                                                        "Unknown error")
@@ -80,14 +81,14 @@ public class CustomerController {
         customerService.customerExists(UUID.fromString(customerId))
                 .orElseThrow(() -> new ResourceNotFoundException(customerId));
         // 2. Check payload
-        requestValidator.validateUpdateOrderRequest(orderRequest);
+        requestValidator.validateUpdateOrderRequestFields(orderRequest);
         // [END] Validate the request
 
         // process the request
         // Save order
         Order order = null;
         try {
-            order = orderService.save(objectMapper.toOrder(orderRequest, customerId));
+            order = orderService.save(objectMapper.toOrder(orderRequest, orderId));
         } catch (Exception exception) {
             throw new InternalErrorException(exception.getMessage());
         }

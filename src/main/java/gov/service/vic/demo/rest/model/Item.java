@@ -9,5 +9,5 @@ public class Item {
     private String itemName;
     private float price;
     private int quantity;
-    private ItemType itemType;
+    private String itemType;
 }

@@ -1,5 +1,5 @@
 package gov.service.vic.demo.rest.model;
 
 public enum ItemType {
-    BURGER, DESSERT
+    BURGER, DESSERT, FRIES, DRINK
 }

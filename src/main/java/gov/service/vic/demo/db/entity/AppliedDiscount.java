@@ -11,10 +11,12 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Discount {
+public class AppliedDiscount {
 
     @Id
     private String discountCode;
+
+    private float discountValue;
 
     private int quantity;
 
@@ -23,7 +25,7 @@ public class Discount {
     @ManyToOne
     private Order order;
 
-    public Discount() {
+    public AppliedDiscount() {
 
     }
 

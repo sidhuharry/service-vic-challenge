@@ -29,7 +29,9 @@ public class Order {
     private Set<OrderItem> orderItems;
 
     @OneToMany(mappedBy = "discountCode")
-    private Set<Discount> discounts;
+    private Set<AppliedDiscount> appliedDiscounts;
+
+    private float amount;
 
     @Override
     public boolean equals(Object o) {

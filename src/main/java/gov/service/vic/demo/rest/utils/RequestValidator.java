@@ -44,6 +44,8 @@ import java.util.stream.Collectors;
         int dessertCount = 0;
         int drinksCount = 0;
 
+        float discountAmount = 0.0f;
+
         for (Item item : orderRequest.getItems()) {
             if (ItemType.FRIES.equals(ItemType.valueOf(item.getItemType()))) {
                 friesCount++;
@@ -60,46 +62,44 @@ import java.util.stream.Collectors;
         }
 
         // unique number of each items and smallest of those will be what discount if applicable
-        Set<Integer> countOfAllItems = new HashSet<>(
-                Arrays.asList(burgerCount, friesCount, dessertCount, drinksCount));
+        int countForOfferDrinksFriesWithDrink = Collections.min(new HashSet<>(
+                Arrays.asList(burgerCount, friesCount, drinksCount)));
 
-        int
+        burgerCount = burgerCount - countForOfferDrinksFriesWithDrink;
 
-        for (AppliedDiscount appliedDiscount : appliedDiscountList) {
-            DiscountCode appliedDiscountCode = DiscountCode.valueOf(appliedDiscount.getDiscountCode());
-            if (activeBundledItemsDisc.containsKey(appliedDiscountCode)) {
-                GroupedItemsDiscount groupedItemsDiscount = activeBundledItemsDisc.get(appliedDiscountCode);
-                if (appliedDiscount.getDiscountValue() != groupedItemsDiscount.getDiscountValue()) {
-                    invalidAppliedDiscount.add(appliedDiscount);
-                }
-            } else if (activeDiscOnTotal.containsKey(appliedDiscountCode)) {
-                DiscountOnTotal discountOnTotal = activeDiscOnTotal.get(appliedDiscountCode);
-                if (discountOnTotal.getSpendingLimit() < orderRequest.getAmount()) {
-                    invalidAppliedDiscount.add(appliedDiscount);
-                }
-            } else {
-                // discount code is invalid.
-                invalidAppliedDiscount.add(appliedDiscount);
-            }
+        friesCount = friesCount - countForOfferDrinksFriesWithDrink;
+
+        drinksCount = drinksCount - countForOfferDrinksFriesWithDrink;
+
+        int countForOfferDrinksFriesDrinkWithDessert = Collections.min(new HashSet<>(
+                Arrays.asList(burgerCount, friesCount, drinksCount, dessertCount)));
+
+        List<AppliedDiscount> actualAppliedDiscountList = new ArrayList<>();
+        if (countForOfferDrinksFriesWithDrink > 0) {
+            AppliedDiscount appliedDiscount = new AppliedDiscount();
+            appliedDiscount.setDiscountValue(
+                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_WITH_DRINK_MEAL).getDiscountValue());
+            appliedDiscount.setQuantity(countForOfferDrinksFriesWithDrink);
+            appliedDiscount.setDesc("Burger fry with drink");
+            actualAppliedDiscountList.add(appliedDiscount);
+            discountAmount += appliedDiscount.getDiscountValue();
         }
 
-        appliedDiscountList.removeAll(invalidAppliedDiscount);
-        orderRequest.setDiscounts(appliedDiscountList);
+        if (countForOfferDrinksFriesDrinkWithDessert > 0) {
+            AppliedDiscount appliedDiscount = new AppliedDiscount();
+            appliedDiscount.setDiscountValue(
+                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL).getDiscountValue());
+            appliedDiscount.setQuantity(countForOfferDrinksFriesDrinkWithDessert);
+            appliedDiscount.setDesc("Burger fry drink with dessert");
+            actualAppliedDiscountList.add(appliedDiscount);
+            discountAmount += appliedDiscount.getDiscountValue();
+        }
 
-        orderRequest.setAmount(getFinalAmount(orderRequest));
+        float totalAfterApplyingDiscounts = orderRequest.getAmountBeforeDiscounts() - discountAmount;
+
+        orderRequest.setAmount(totalAfterApplyingDiscounts);
+        orderRequest.setDiscounts(actualAppliedDiscountList);
         return orderRequest;
-    }
-
-    private float getFinalAmount(OrderRequest orderRequest) {
-        float amountBeforeOffers = 0.0f;
-        float discountAmount = 0.0f;
-        for (Item item : orderRequest.getItems()) {
-            amountBeforeOffers = amountBeforeOffers + (item.getPrice() * item.getQuantity());
-        }
-        for (AppliedDiscount discount : orderRequest.getDiscounts()) {
-            discountAmount = discountAmount + (discount.getDiscountValue() * discount.getQuantity());
-        }
-        return amountBeforeOffers - discountAmount;
     }
 
     private void validateNewOrderRequestFields(OrderRequest orderRequest) {

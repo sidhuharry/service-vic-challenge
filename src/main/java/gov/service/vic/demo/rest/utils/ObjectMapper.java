@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
                     orderRequest.getDiscounts().stream().map(this::toDiscountItem).collect(Collectors.toSet()));
         }
 
-        order.setCustomerId(order.getCustomerId());
+        order.setCustomerId(orderRequest.getCustomer().getCustomerId());
         order.setAmount(orderRequest.getAmount());
 
         return order;
@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
     }
 
     public OrderResponse toResponse(@NonNull Order order, OrderStatus orderStatus, String message) {
-        return OrderResponse.builder().orderId(order.getOrderId()).orderStatus(orderStatus).message(message).build();
+        return OrderResponse.builder().orderId(order.getOrderId()).orderStatus(orderStatus).message(message)
+                .savedData(order).build();
     }
 
     private OrderItem toOrderItem(Item requestItem) {

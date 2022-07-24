@@ -60,11 +60,11 @@ public class CustomerController {
 
         // Save order
         Order order = null;
-        //try {
-            order = orderService.save(objectMapper.toOrder(sanitizedRequest, customerId));
-        //} catch (Exception exception) {
-          //  throw new InternalErrorException(exception.getMessage());
-        //}
+        try {
+            order = orderService.save(objectMapper.toOrder(sanitizedRequest));
+        } catch (Exception exception) {
+            throw new InternalErrorException(exception.getMessage());
+        }
 
         return order == null ? objectMapper.toResponse(order, OrderStatus.FAILURE,
                                                        "Unknown error")

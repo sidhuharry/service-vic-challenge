@@ -22,9 +22,15 @@ public class AuthFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
+        //Required for h2console
+        if (httpRequest.getRequestURL().toString().contains("h2console")) {
+            filterChain.doFilter(httpRequest, httpResponse);
+            return;
+        }
+
         String authTokenInRequest = httpRequest.getHeader("Authorization");
 
-        if (!(authTokenInRequest != null && authTokenInRequest.equals("YS10b3RhbGx5LWxlZ2l0LXRva2VuLXRydXN0LW1l"))) {
+        if (!(authTokenInRequest != null && authTokenInRequest.equals(hardcodedAuthToken))) {
             // auth failure
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;

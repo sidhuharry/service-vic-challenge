@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.BiPredicate;
 
 @Service public class RequestValidator {
 
@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 
     @Qualifier("ActiveDiscountOnTotal")
     private Map<DiscountCode, DiscountOnTotal> activeDiscOnTotal;
+
+    BiPredicate<Item, ItemType> itemTypeMatcher = (item, itemType) -> itemType.equals(
+            ItemType.valueOf(item.getItemType()));
 
     public RequestValidator(Map<DiscountCode, GroupedItemsDiscount> activeBundledItemsDisc,
                             Map<DiscountCode, DiscountOnTotal> activeDiscOnTotal) {
@@ -37,28 +40,20 @@ import java.util.stream.Collectors;
      * Check if the applied discounts match the active discounts. If not, remove the non-applicable discounts.
      */
     private OrderRequest sanitizeDiscountsApplied(OrderRequest orderRequest) {
-        List<AppliedDiscount> invalidAppliedDiscount = new ArrayList<>();
-        List<AppliedDiscount> appliedDiscountList = orderRequest.getDiscounts();
-        int friesCount = 0;
-        int burgerCount = 0;
-        int dessertCount = 0;
-        int drinksCount = 0;
-        float discountAmount = 0.0f;
 
-        for (Item item : orderRequest.getItems()) {
-            if (ItemType.FRIES.equals(ItemType.valueOf(item.getItemType()))) {
-                friesCount += item.getQuantity();
-            }
-            if (ItemType.BURGER.equals(ItemType.valueOf(item.getItemType()))) {
-                burgerCount += item.getQuantity();
-            }
-            if (ItemType.DESSERT.equals(ItemType.valueOf(item.getItemType()))) {
-                dessertCount += item.getQuantity();
-            }
-            if (ItemType.DRINK.equals(ItemType.valueOf(item.getItemType()))) {
-                drinksCount += item.getQuantity();
-            }
-        }
+        int friesCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.FRIES))
+                .mapToInt(Item::getQuantity).sum();
+
+        int burgerCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.BURGER))
+                .mapToInt(Item::getQuantity).sum();
+        ;
+        int dessertCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.DESSERT))
+                .mapToInt(Item::getQuantity).sum();
+        ;
+        int drinksCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.DRINK))
+                .mapToInt(Item::getQuantity).sum();
+        ;
+        float discountAmount = 0.0f;
 
         // unique number of each items and smallest of those will be what discount if applicable
         int countForOfferBurgerFriesDrinkWithDessert = Collections.min(new HashSet<>(
@@ -78,41 +73,49 @@ import java.util.stream.Collectors;
         List<AppliedDiscount> actualAppliedDiscountList = new ArrayList<>();
 
         if (countForOfferBurgerFriesWithDrink > 0) {
-            AppliedDiscount appliedDiscount = new AppliedDiscount();
-            appliedDiscount.setDiscountValue(
-                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_WITH_DRINK_MEAL).getDiscountValue());
-            appliedDiscount.setQuantity(countForOfferBurgerFriesWithDrink);
-            appliedDiscount.setDesc("Burger fry with drink");
+            AppliedDiscount appliedDiscount = instantiateAppliedDiscount(
+                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_WITH_DRINK_MEAL).getDiscountValue(),
+                    countForOfferBurgerFriesWithDrink, DiscountCode.BURGER_FRY_WITH_DRINK_MEAL.toString(),
+                    "Burger fries with drink");
             actualAppliedDiscountList.add(appliedDiscount);
             discountAmount += (appliedDiscount.getDiscountValue() * countForOfferBurgerFriesWithDrink);
         }
 
         if (countForOfferBurgerFriesDrinkWithDessert > 0) {
-            AppliedDiscount appliedDiscount = new AppliedDiscount();
-            appliedDiscount.setDiscountValue(
-                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL).getDiscountValue());
-            appliedDiscount.setQuantity(countForOfferBurgerFriesDrinkWithDessert);
-            appliedDiscount.setDesc("Burger fry drink with dessert");
+            AppliedDiscount appliedDiscount = instantiateAppliedDiscount(
+                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL).getDiscountValue(),
+                    countForOfferBurgerFriesDrinkWithDessert,
+                    DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL.toString(), "Burger fry drink with dessert");
+
             actualAppliedDiscountList.add(appliedDiscount);
             discountAmount += (appliedDiscount.getDiscountValue() * countForOfferBurgerFriesDrinkWithDessert);
         }
 
         float totalAfterApplyingDiscounts = orderRequest.getAmountBeforeDiscounts() - discountAmount;
-        float finalAmount = getDiscountOnTotal(totalAfterApplyingDiscounts);
-        orderRequest.setAmount(finalAmount);
         orderRequest.setDiscounts(actualAppliedDiscountList);
+        orderRequest = updateRequestWithDiscountOnTotal(totalAfterApplyingDiscounts, orderRequest);
         return orderRequest;
     }
 
-    private float getDiscountOnTotal(float totalAmountAfterOtherDiscounts) {
+    private OrderRequest updateRequestWithDiscountOnTotal(float totalAmountAfterOtherDiscounts,
+                                                          OrderRequest orderRequest) {
+        float finalAmount = totalAmountAfterOtherDiscounts;
+        List<AppliedDiscount> appliedDiscountsOnTotal = new ArrayList<>();
         for (Map.Entry<DiscountCode, DiscountOnTotal> discountCodeDiscountOnTotalEntry : activeDiscOnTotal.entrySet()) {
             if (totalAmountAfterOtherDiscounts > discountCodeDiscountOnTotalEntry.getValue().getSpendingLimit()) {
-                return calculateAmountAfterPercentageDiscount(totalAmountAfterOtherDiscounts,
-                                                              discountCodeDiscountOnTotalEntry.getValue()
-                                                                      .getDiscPercentage());
+                AppliedDiscount appliedDiscount = instantiateAppliedDiscount(
+                        discountCodeDiscountOnTotalEntry.getValue().getDiscPercentage(), 1,
+                        discountCodeDiscountOnTotalEntry.getKey().toString(), "Total more than 30$");
+
+                finalAmount = calculateAmountAfterPercentageDiscount(finalAmount,
+                                                                     discountCodeDiscountOnTotalEntry.getValue()
+                                                                             .getDiscPercentage());
+                appliedDiscountsOnTotal.add(appliedDiscount);
             }
+            orderRequest.getDiscounts().addAll(appliedDiscountsOnTotal);
+            orderRequest.setAmount(finalAmount);
         }
-        return totalAmountAfterOtherDiscounts;
+        return orderRequest;
     }
 
     private float calculateAmountAfterPercentageDiscount(float amountBeforeDisc, int percentage) {
@@ -139,7 +142,6 @@ import java.util.stream.Collectors;
             }
         });
 
-
         orderRequest.getDiscounts().forEach(discount -> {
             if (discount.getDiscountCode() == null || discount.getDiscountValue() == 0) {
                 throw new InvalidRequestException("Discount fields are not set properly");
@@ -153,5 +155,15 @@ import java.util.stream.Collectors;
             throw new InvalidRequestException(
                     "Order Id is missing, you need to tell me which order am I supposed to update?");
         }
+    }
+
+    public AppliedDiscount instantiateAppliedDiscount(float discValue, int quantity,
+                                                      String discCode, String desc) {
+        AppliedDiscount appliedDiscount = new AppliedDiscount();
+        appliedDiscount.setDiscountValue(discValue);
+        appliedDiscount.setQuantity(quantity);
+        appliedDiscount.setDiscountCode(discCode);
+        appliedDiscount.setDesc(desc);
+        return appliedDiscount;
     }
 }

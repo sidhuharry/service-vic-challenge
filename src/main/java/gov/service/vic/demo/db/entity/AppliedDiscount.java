@@ -1,7 +1,9 @@
 package gov.service.vic.demo.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +25,8 @@ public class AppliedDiscount {
     private String desc;
 
     @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     public AppliedDiscount() {

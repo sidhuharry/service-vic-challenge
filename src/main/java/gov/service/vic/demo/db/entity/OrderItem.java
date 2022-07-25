@@ -1,10 +1,8 @@
 package gov.service.vic.demo.db.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -28,7 +26,9 @@ public class OrderItem {
 
     private float price;
 
+    @JsonIgnore
     @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
 }

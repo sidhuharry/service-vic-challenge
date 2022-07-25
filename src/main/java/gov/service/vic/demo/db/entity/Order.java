@@ -14,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "`ORDER`")
+@Table(name = "CUSTOMER_ORDERS")
 public class Order {
     public Order() {
     }
@@ -25,10 +25,10 @@ public class Order {
     @GeneratedValue(generator = "uuid")
     private UUID orderId;
 
-    @OneToMany(mappedBy = "orderItemId")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private Set<OrderItem> orderItems;
 
-    @OneToMany(mappedBy = "discountCode")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private Set<AppliedDiscount> appliedDiscounts;
 
     private float amount;

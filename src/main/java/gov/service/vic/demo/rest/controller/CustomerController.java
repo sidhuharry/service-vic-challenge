@@ -59,7 +59,7 @@ public class CustomerController {
         // [END] Validate the request
 
         // Save order
-        Order order = null;
+        Order order;
         try {
             order = orderService.save(objectMapper.toOrder(sanitizedRequest));
         } catch (Exception exception) {

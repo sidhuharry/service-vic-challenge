@@ -46,13 +46,13 @@ import java.util.function.BiPredicate;
 
         int burgerCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.BURGER))
                 .mapToInt(Item::getQuantity).sum();
-        ;
+
         int dessertCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.DESSERT))
                 .mapToInt(Item::getQuantity).sum();
-        ;
+
         int drinksCount = orderRequest.getItems().stream().filter(item -> itemTypeMatcher.test(item, ItemType.DRINK))
                 .mapToInt(Item::getQuantity).sum();
-        ;
+
         float discountAmount = 0.0f;
 
         // unique number of each items and smallest of those will be what discount if applicable
@@ -73,19 +73,22 @@ import java.util.function.BiPredicate;
         List<AppliedDiscount> actualAppliedDiscountList = new ArrayList<>();
 
         if (countForOfferBurgerFriesWithDrink > 0) {
-            AppliedDiscount appliedDiscount = instantiateAppliedDiscount(
-                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_WITH_DRINK_MEAL).getDiscountValue(),
-                    countForOfferBurgerFriesWithDrink, DiscountCode.BURGER_FRY_WITH_DRINK_MEAL.toString(),
-                    "Burger fries with drink");
+            AppliedDiscount appliedDiscount = AppliedDiscount.builder()
+                    .discountValue(
+                            activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_WITH_DRINK_MEAL).getDiscountValue())
+                    .quantity(countForOfferBurgerFriesWithDrink)
+                    .discountCode(DiscountCode.BURGER_FRY_WITH_DRINK_MEAL.toString()).desc("Burger fries with drink")
+                    .build();
             actualAppliedDiscountList.add(appliedDiscount);
             discountAmount += (appliedDiscount.getDiscountValue() * countForOfferBurgerFriesWithDrink);
         }
 
         if (countForOfferBurgerFriesDrinkWithDessert > 0) {
-            AppliedDiscount appliedDiscount = instantiateAppliedDiscount(
-                    activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL).getDiscountValue(),
-                    countForOfferBurgerFriesDrinkWithDessert,
-                    DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL.toString(), "Burger fry drink with dessert");
+            AppliedDiscount appliedDiscount = AppliedDiscount.builder().discountValue(
+                            activeBundledItemsDisc.get(DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL).getDiscountValue())
+                    .quantity(countForOfferBurgerFriesDrinkWithDessert)
+                    .discountCode(DiscountCode.BURGER_FRY_DRINK_WITH_DESSERT_MEAL.toString())
+                    .desc("Burger fry drink with dessert").build();
 
             actualAppliedDiscountList.add(appliedDiscount);
             discountAmount += (appliedDiscount.getDiscountValue() * countForOfferBurgerFriesDrinkWithDessert);
@@ -103,9 +106,10 @@ import java.util.function.BiPredicate;
         List<AppliedDiscount> appliedDiscountsOnTotal = new ArrayList<>();
         for (Map.Entry<DiscountCode, DiscountOnTotal> discountCodeDiscountOnTotalEntry : activeDiscOnTotal.entrySet()) {
             if (totalAmountAfterOtherDiscounts > discountCodeDiscountOnTotalEntry.getValue().getSpendingLimit()) {
-                AppliedDiscount appliedDiscount = instantiateAppliedDiscount(
-                        discountCodeDiscountOnTotalEntry.getValue().getDiscPercentage(), 1,
-                        discountCodeDiscountOnTotalEntry.getKey().toString(), "Total more than 30$");
+                AppliedDiscount appliedDiscount = AppliedDiscount.builder()
+                        .discountValue(discountCodeDiscountOnTotalEntry.getValue().getDiscPercentage()).quantity(1)
+                        .discountCode(discountCodeDiscountOnTotalEntry.getKey().toString())
+                        .desc("Total more than 30$").build();
 
                 finalAmount = calculateAmountAfterPercentageDiscount(finalAmount,
                                                                      discountCodeDiscountOnTotalEntry.getValue()
@@ -157,13 +161,4 @@ import java.util.function.BiPredicate;
         }
     }
 
-    public AppliedDiscount instantiateAppliedDiscount(float discValue, int quantity,
-                                                      String discCode, String desc) {
-        AppliedDiscount appliedDiscount = new AppliedDiscount();
-        appliedDiscount.setDiscountValue(discValue);
-        appliedDiscount.setQuantity(quantity);
-        appliedDiscount.setDiscountCode(discCode);
-        appliedDiscount.setDesc(desc);
-        return appliedDiscount;
-    }
 }

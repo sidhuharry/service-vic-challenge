@@ -8,17 +8,21 @@ import gov.service.vic.demo.rest.model.AppliedDiscount;
 import gov.service.vic.demo.rest.model.Item;
 import gov.service.vic.demo.rest.model.ItemType;
 import gov.service.vic.demo.rest.model.OrderRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.function.BiPredicate;
 
 @Service public class RequestValidator {
 
+    @Autowired
     @Qualifier("ActiveBundledItemsDiscounts")
     private Map<DiscountCode, GroupedItemsDiscount> activeBundledItemsDisc;
 
+    @Autowired
     @Qualifier("ActiveDiscountOnTotal")
     private Map<DiscountCode, DiscountOnTotal> activeDiscOnTotal;
 
@@ -27,6 +31,7 @@ import java.util.function.BiPredicate;
 
     public RequestValidator(Map<DiscountCode, GroupedItemsDiscount> activeBundledItemsDisc,
                             Map<DiscountCode, DiscountOnTotal> activeDiscOnTotal) {
+
         this.activeBundledItemsDisc = activeBundledItemsDisc;
         this.activeDiscOnTotal = activeDiscOnTotal;
     }
@@ -105,7 +110,7 @@ import java.util.function.BiPredicate;
         float finalAmount = totalAmountAfterOtherDiscounts;
         List<AppliedDiscount> appliedDiscountsOnTotal = new ArrayList<>();
         for (Map.Entry<DiscountCode, DiscountOnTotal> discountCodeDiscountOnTotalEntry : activeDiscOnTotal.entrySet()) {
-            if (totalAmountAfterOtherDiscounts > discountCodeDiscountOnTotalEntry.getValue().getSpendingLimit()) {
+            if (finalAmount > discountCodeDiscountOnTotalEntry.getValue().getSpendingLimit()) {
                 AppliedDiscount appliedDiscount = AppliedDiscount.builder()
                         .discountValue(discountCodeDiscountOnTotalEntry.getValue().getDiscPercentage()).quantity(1)
                         .discountCode(discountCodeDiscountOnTotalEntry.getKey().toString())

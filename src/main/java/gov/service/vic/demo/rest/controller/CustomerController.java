@@ -73,7 +73,7 @@ public class CustomerController {
 
 
     @PutMapping("/{customerId}/order/{orderId}")
-    OrderResponse newOrder(@RequestBody OrderRequest orderRequest, @PathVariable String customerId,
+    OrderResponse updateOrder(@RequestBody OrderRequest orderRequest, @PathVariable String customerId,
                            @PathVariable String orderId) {
 
         // [START] Validate the request
